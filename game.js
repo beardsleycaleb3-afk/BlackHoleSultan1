@@ -1,88 +1,90 @@
-// --- 1. CONFIGURATION & MAP DATA ---
+// --- 1. SETUP ---
+const canvas = document.getElementById('game-canvas');
+const ctx = canvas.getContext('2d');
+
 const TILE_SIZE = 32;
-const MAP_DIM = 200;
-const VIEWPORT_W = window.innerWidth;
-const VIEWPORT_H = window.innerHeight * 0.7;
+const MAP_SIZE = 200; // Your 200x200 grid
 
-let player = { x: 2 * TILE_SIZE, y: 2 * TILE_SIZE, velX: 0, velY: 0 };
-let mapData = [];
-let storyIndex = 0;
+// Player Object
+const player = {
+    x: 64,  // Starting at Tile 2
+    y: 64,  // Starting at Tile 2
+    velX: 0,
+    velY: 0,
+    dir: 'south'
+};
 
-// Tile Key: 0: Walk, 3: Corner, 8: Top, 4: Bottom, 9: Left, 2: Right, 5: Battle, 6: Start, 1: Exit
-function generateMap() {
-    const container = document.getElementById('map-container');
-    container.style.gridTemplateColumns = `repeat(${MAP_DIM}, ${TILE_SIZE}px)`;
+// Tile Asset Map (Matching your renamed files)
+const TILE_ASSETS = {
+    0: 'assets/maps/100walkable_floor2.png',
+    3: 'assets/maps/corner.png',
+    5: 'assets/maps/triggerbattlefloortile.png', // THE TRIGGER
+    8: 'assets/maps/wall_t.png',
+    9: 'assets/maps/wall_Left.png'
+};
 
-    for (let y = 0; y < MAP_DIM; y++) {
-        mapData[y] = [];
-        for (let x = 0; x < MAP_DIM; x++) {
-            let tileType = 0;
-            // Border Logic
-            if (y === 0 || y === MAP_DIM - 1 || x === 0 || x === MAP_DIM - 1) {
-                tileType = (y === 0 && x === 0) ? 3 : (y === 0) ? 8 : (y === MAP_DIM - 1) ? 4 : (x === 0) ? 9 : 2;
-            } else if (Math.random() < 0.01) {
-                tileType = 5; // Random Battle Trigger
-            }
-            mapData[y][x] = tileType;
+// --- 2. THE MAP DATA (Example Section) ---
+// Ensure your 200x200 array is loaded here
+let mapData = [
+    [8, 8, 8, 8, 8],
+    [9, 0, 0, 0, 2],
+    [9, 0, 5, 0, 2], // Tile 5 is the battle trigger
+    [4, 4, 4, 4, 4]
+];
 
-            // Only render visible tiles for performance (Simplified for now)
-            const tile = document.createElement('div');
-            tile.classList.add('tile');
-            tile.style.width = `${TILE_SIZE}px`;
-            tile.style.height = `${TILE_SIZE}px`;
-            // Add background images based on tileType here
-            container.appendChild(tile);
+// --- 3. THE SENSOR (COLLISION & TRIGGER) ---
+function checkCollision() {
+    const gridX = Math.floor((player.x + 16) / TILE_SIZE);
+    const gridY = Math.floor((player.y + 16) / TILE_SIZE);
+
+    if (mapData[gridY] && mapData[gridY][gridX] === 5) {
+        // HIT THE TRIGGER
+        mapData[gridY][gridX] = 0; // Clear the tile
+        
+        // Stop movement
+        player.velX = 0;
+        player.velY = 0;
+
+        // SWITCH TO BATTLE (From battle.js)
+        if (typeof initiateBattleMode === "function") {
+            initiateBattleMode();
         }
     }
 }
 
-// --- 2. SMOOTH NAVIGATION (MINECRAFT STYLE) ---
+// --- 4. GAME LOOP ---
 function update() {
-    // Apply velocity to player position
+    if (isBattleMode) return; // Freeze overworld during fight
+
+    // Apply movement with slight friction for Minecraft-style feel
     player.x += player.velX;
     player.y += player.velY;
-
-    // Friction
-    player.velX *= 0.85;
-    player.velY *= 0.85;
-
-    // Camera Follow: Move the map relative to player
-    const mapContainer = document.getElementById('map-container');
-    const offsetX = (VIEWPORT_W / 2) - player.x;
-    const offsetY = (VIEWPORT_H / 2) - player.y;
-    mapContainer.style.transform = `translate(${offsetX}px, ${offsetY}px)`;
+    player.velX *= 0.9;
+    player.velY *= 0.9;
 
     checkCollision();
+    draw();
     requestAnimationFrame(update);
 }
 
-// --- 3. COLLISION & STORY TRIGGER ---
-function checkCollision() {
-    const gridX = Math.floor(player.x / TILE_SIZE);
-    const gridY = Math.floor(player.y / TILE_SIZE);
+function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    if (mapData[gridY] && mapData[gridY][gridX] === 5) {
-        mapData[gridY][gridX] = 0; // Clear the trigger
-        triggerStory();
+    // Draw Map Tiles
+    for (let y = 0; y < mapData.length; y++) {
+        for (let x = 0; x < mapData[y].length; x++) {
+            const tileType = mapData[y][x];
+            const img = new Image();
+            img.src = TILE_ASSETS[tileType] || TILE_ASSETS[0];
+            ctx.drawImage(img, x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+        }
     }
+
+    // Draw Hero (rs_hero.png)
+    const heroImg = new Image();
+    heroImg.src = `assets/rs/${player.dir}_idlers.png`;
+    ctx.drawImage(heroImg, player.x, player.y, TILE_SIZE, TILE_SIZE);
 }
 
-function triggerStory() {
-    const textWin = document.getElementById('text-window');
-    const textContent = document.getElementById('typewriter-text');
-    textWin.style.display = 'block';
-    
-    // Typewriter effect logic
-    let text = "Hiss... A Snake Archer blocks the path. The Law binds!";
-    let i = 0;
-    textContent.innerHTML = "";
-    const timer = setInterval(() => {
-        textContent.innerHTML += text.charAt(i);
-        i++;
-        if (i >= text.length) clearInterval(timer);
-    }, 50);
-}
-
-// Initialize
-generateMap();
+// Start the engine
 update();
