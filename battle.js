@@ -1,87 +1,93 @@
 // --- 1. THE 10-BATTLE PROPHECY DATA ---
-// This cycles through your 50 images in order as you hit trigger tiles
+// I've mapped these to your specific renamed GitHub assets.
 const prophecySteps = [
-    { name: "Kha'bit", enemy: "archer_snake3.jpg", story: "The Void Path coils. Kha'bit guards the first binding." },
-    { name: "Void Scourge", enemy: "void_rat1.jpg", story: "A hiss in the dark. The Void Rat hungers for your logic." },
-    { name: "Hiss-Lion", enemy: "bblion.jpg", story: "The Chimera of the Sultan appears. 1*1=2 must be proven." },
-    { name: "Ice Golem", enemy: "dragon_ice_boss2.jpeg", story: "Entropy freezes the path. Break the Shannon limit." },
-    { name: "Mage Mouse", enemy: "mage_mouse.jpeg", story: "Small but ancient. The Mage Mouse tests your Brawn." },
-    // ... add the rest of your 10 enemies here following this format
+    { name: "Void Rat", enemy: "void_rat1.jpg", story: "The Void Path begins. A scout from the dark nibbles at reality." },
+    { name: "Snake Archer", enemy: "archer_snake3.jpg", story: "Hissing arrows fly. The Snake Archer tests your agility." },
+    { name: "Hissing One", enemy: "hisser.jpg", story: "The ground vibrates. The Hisser emerges from the floor tiles." },
+    { name: "Mage Mouse", enemy: "mage_mouse.jpeg", story: "Small, but the magic is ancient. Don't underestimate the rodent." },
+    { name: "Void Mouse", enemy: "void_mouse.jpg", story: "The sibling of the scout. The Void hunger grows stronger." },
+    { name: "Ice Dragon", enemy: "dragon_ice_boss2.jpeg", story: "Entropy reaches zero. The Dragon of Ice freezes the Shannon limit." },
+    { name: "Sultan Lion", enemy: "bblion.jpg", story: "The Guardian of the Law. Only 1*1=2 can breach this hide." },
+    { name: "Great Chimera", enemy: "boss_snake_lion.jpg", story: "The ultimate fusion. The Snake and Lion become one." }
+    // Add 2 more here to reach your 10 total
 ];
 
 let currentStep = 0;
 let isBattleMode = false;
-let skillPoints = 0;
 let enemyHP = 50;
 
-// --- 2. TRANSITION TO BATTLE ---
+// --- 2. THE TRIGGER (Called by Tile 5 in game.js) ---
 function initiateBattleMode() {
-    if (currentStep >= prophecySteps.length) return;
+    if (currentStep >= prophecySteps.length) {
+        console.log("The Prophecy is fulfilled. No more enemies.");
+        return;
+    }
 
     isBattleMode = true;
     const step = prophecySteps[currentStep];
 
-    // Show Battle Screen & Typewriter Story
-    document.getElementById('battle-screen').style.display = 'block';
-    document.getElementById('text-window').style.display = 'block';
+    // Show Battle Screen
+    const battleUI = document.getElementById('battle-screen');
+    battleUI.style.display = 'block';
     
-    // Set Assets
-    document.getElementById('enemy-sprite').src = `assets/battlescreen/enemy/${step.enemy}`;
+    // Set the specific background you requested
+    battleUI.style.backgroundImage = "url('assets/battlescreen/mainbackground/battlescrn.png')";
+    battleUI.style.backgroundSize = "cover";
+
+    // Load Enemy Sprite
+    const enemyImg = document.getElementById('enemy-sprite');
+    enemyImg.src = `assets/battlescreen/enemy/${step.enemy}`;
+
+    // Start Story Typewriter
+    document.getElementById('text-window').style.display = 'block';
     runTypewriter(step.story);
 }
 
-// --- 3. THE SULTAN LAW (COMBAT) ---
+// --- 3. COMBAT LOGIC (Button A) ---
 function heroAttack() {
     if (!isBattleMode) return;
 
-    // Apply the g.o.g. Law: 1*1=2 logic
+    // Apply Sultan Law: 1*1=2 (Doubles damage if skill unlocked)
     let damage = 10;
     if (skills.sultanLaw.unlocked) {
-        damage = 20; // 1*1=2 doubling effect
-        console.log("Sultan Law Active: Critical Strike!");
+        damage = 20; 
+        console.log("The Law of 1*1=2 is applied!");
     }
 
     enemyHP -= damage;
 
     if (enemyHP <= 0) {
-        victory();
+        winBattle();
+    } else {
+        console.log(`Enemy HP: ${enemyHP}`);
     }
 }
 
-function victory() {
-    alert(`Victory over ${prophecySteps[currentStep].name}! +1 Skill Point.`);
+function winBattle() {
+    alert(`Victory! ${prophecySteps[currentStep].name} defeated.`);
     skillPoints++;
-    currentStep++; // Move to the next battle in the 10-step story
+    currentStep++; // Move to next battle in the array
     isBattleMode = false;
-    enemyHP = 50; // Reset for next enemy
+    enemyHP = 50; // Reset for next fight
+    
+    // Hide battle screen, return to map
     document.getElementById('battle-screen').style.display = 'none';
+    document.getElementById('map-container').style.display = 'block';
 }
 
-// --- 4. SKILL TREE (DEAD ISLAND STYLE) ---
-const skills = {
-    sultanLaw: { unlocked: false, cost: 3, desc: "1*1=2 Multiplier" },
-    brawn: { unlocked: false, cost: 1, desc: "+5 Base Damage" }
-};
-
-function toggleSkillMenu() {
-    const screen = document.getElementById('skill-screen');
-    screen.style.display = (screen.style.display === 'none') ? 'block' : 'none';
-    renderSkills();
-}
-
-function renderSkills() {
-    const container = document.getElementById('skill-nodes');
-    container.innerHTML = `<p>Points: ${skillPoints}</p>`;
-    // Logic to loop through skills and create buttons goes here
-}
-
+// --- 4. TYPEWRITER EFFECT ---
 function runTypewriter(text) {
     const box = document.getElementById('typewriter-text');
     box.innerHTML = "";
     let i = 0;
-    const interval = setInterval(() => {
-        box.innerHTML += text.charAt(i);
-        i++;
-        if (i >= text.length) clearInterval(interval);
-    }, 40);
+    const speed = 50; 
+
+    function type() {
+        if (i < text.length) {
+            box.innerHTML += text.charAt(i);
+            i++;
+            setTimeout(type, speed);
+        }
+    }
+    type();
 }
