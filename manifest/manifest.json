@@ -1,0 +1,11 @@
+{
+  "name": "Sultan G.O.G. Revelation",
+  "short_name": "Sultan",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#ff0000",
+  "icons": [
+    { "src": "1000037747.jpg", "sizes": "512x512", "type": "image/jpeg" }
+  ]
+}
