@@ -3,155 +3,362 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Black Hole Sultan</title>
-    <link id="manifest-link" rel="manifest">
+    <title>Black Hole Sultan RPG</title>
+    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
     <style>
-        :root { --red: #ff3b3b; --gold: #ffd700; --void: #050505; --gray: #444; }
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        :root { --void-green: #00ff00; --gold: #ffd700; --red: #ff3b3b; --void: #050505; --gray: #444; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
         body, html { 
-            margin: 0; padding: 0; width: 100%; height: 100%; 
-            background: var(--void); color: #fff; font-family: 'Courier New', monospace;
-            overflow: hidden; touch-action: none;
+            height: 100%; width: 100%; background: var(--void); 
+            color: var(--void-green); font-family: 'VT323', monospace;
+            overflow: hidden; touch-action: none; font-size: 18px;
         }
-        #game-container { display: flex; flex-direction: column; height: 100vh; position: relative; }
-        #telemetry { position: absolute; top: 10px; width: 100%; text-align: center; color: var(--gold); font-size: 14px; z-index: 50; }
-        #viewport { flex: 7; display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(3, 1fr); background: #000; border-bottom: 2px solid var(--gold); }
-        .tile { width: 100%; height: 100%; background-size: cover; image-rendering: pixelated; opacity: 0.15; transition: 0.2s; }
-        .tile:nth-child(5) { opacity: 1; filter: brightness(1.2); }
-        #player { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 80px; z-index: 10; image-rendering: pixelated; }
-        #hud { flex: 3; background: #000; display: grid; grid-template-columns: 1fr 1fr; padding: 15px; padding-bottom: env(safe-area-inset-bottom); }
-        .dpad { display: grid; grid-template-areas: ". u ." "l . r" ". d ."; gap: 5px; width: 140px; }
-        .dpad button { background: #111; border: 1px solid var(--gold); color: var(--gold); border-radius: 8px; font-size: 20px; font-weight: bold; }
-        .actions { display: flex; flex-direction: column; gap: 10px; justify-content: center; align-items: flex-end; }
-        .btn-act { width: 110px; height: 50px; border-radius: 12px; font-weight: bold; border: none; font-size: 18px; color: #fff; }
-        .btn-gog { background: var(--red); box-shadow: 0 5px #900; }
-        .btn-mawl { background: var(--gray); box-shadow: 0 5px #222; }
-        .overlay { position: absolute; inset: 0; z-index: 100; display: none; flex-direction: column; align-items: center; justify-content: center; padding: 20px; background: rgba(0,0,0,0.9); }
-        #story-box { border: 2px solid var(--gold); background: #000; padding: 25px; width: 100%; box-shadow: 0 0 20px var(--gold); }
-        .hp-bar { width: 80%; height: 15px; border: 1px solid #fff; margin-top: 20px; position: relative; }
-        #hp-fill { height: 100%; background: var(--red); width: 100%; transition: width 0.3s; }
+        
+        #game-container {
+            display: flex; flex-direction: column; height: 100vh;
+            background: radial-gradient(circle, #1a1a1a 0%, #000 100%);
+        }
+
+        /* 70% Game Viewport */
+        #viewport {
+            flex: 7; position: relative; background: #000;
+            border-bottom: 4px solid var(--gold); overflow: hidden;
+            image-rendering: pixelated;
+        }
+
+        #map-bg {
+            position: absolute; width: 100%; height: 100%;
+            background: linear-gradient(45deg, #001100, #000, #001100);
+            opacity: 0.3;
+        }
+
+        #player {
+            position: absolute; width: 64px; height: 64px; z-index: 20;
+            transition: transform 0.1s; image-rendering: pixelated;
+        }
+
+        /* 30% Controller Area */
+        #hud {
+            flex: 3; display: grid; grid-template-columns: 1fr 1fr; 
+            padding: 20px; gap: 20px; background: #111;
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+
+        .dpad {
+            display: grid; grid-template-areas: 
+                ". u ." "l c r" ". d .";
+            gap: 12px; place-self: center;
+        }
+        .dpad button {
+            background: #333; border: 2px solid var(--gold);
+            color: var(--gold); border-radius: 12px; font-size: 24px;
+            font-weight: bold; font-family: 'VT323', monospace;
+            min-height: 60px; touch-action: manipulation;
+        }
+        [style*="grid-area: c"] { background: #555; }
+
+        .actions {
+            display: flex; flex-direction: column; gap: 20px;
+            justify-content: center; align-items: flex-end;
+        }
+        .btn-act {
+            width: 90px; height: 60px; border-radius: 16px;
+            border: none; font-size: 20px; font-family: 'VT323', monospace;
+            font-weight: bold; color: white; box-shadow: 0 6px #333;
+            touch-action: manipulation;
+        }
+        .btn-gog { background: #00aa00; box-shadow: 0 6px #006600; }
+        .btn-mawl { background: var(--gray); box-shadow: 0 6px #222; }
+        .btn-act:active { transform: translateY(6px); box-shadow: 0 0 #000; }
+
+        /* Telemetry */
+        #telemetry {
+            position: absolute; top: 10px; left: 10px; z-index: 50;
+            background: rgba(0,0,0,0.8); padding: 8px 12px;
+            border: 1px solid var(--gold); font-size: 16px;
+        }
+
+        /* Story Overlay */
+        .overlay {
+            position: absolute; inset: 0; z-index: 100;
+            display: none; flex-direction: column; align-items: center;
+            justify-content: center; background: rgba(0,0,0,0.95);
+            backdrop-filter: blur(4px);
+        }
+        #story-box {
+            border: 3px solid var(--void-green); background: rgba(0,20,0,0.9);
+            padding: 30px; max-width: 90%; max-height: 70%;
+            overflow-y: auto; box-shadow: 0 0 30px var(--void-green);
+            text-align: center; line-height: 1.4;
+        }
+
+        /* Battle Overlay */
+        #battle-hp {
+            width: 80%; height: 20px; border: 2px solid var(--gold);
+            margin: 20px 0; background: #222; position: relative;
+        }
+        #hp-fill {
+            height: 100%; background: linear-gradient(90deg, var(--red), #ff6666);
+            width: 100%; transition: width 0.3s ease;
+        }
     </style>
 </head>
 <body>
-
-<div id="game-container">
-    <div id="telemetry">§</div>
-    <div id="viewport">
-        <div class="tile"></div><div class="tile"></div><div class="tile"></div>
-        <div class="tile"></div><div class="tile"></div><div class="tile"></div>
-        <div class="tile"></div><div class="tile"></div><div class="tile"></div>
-        <img id="player" src="assets/rs/0s.png">
-    </div>
-    <div id="hud">
-        <div class="dpad">
-            <button style="grid-area:u" onpointerdown="engine.move(0,-1)">▲</button>
-            <button style="grid-area:l" onpointerdown="engine.move(-1,0)">◀</button>
-            <button style="grid-area:r" onpointerdown="engine.move(1,0)">▶</button>
-            <button style="grid-area:d" onpointerdown="engine.move(0,1)">▼</button>
+    <div id="game-container">
+        <div id="telemetry">§ INITIALIZING...</div>
+        
+        <!-- Game Viewport (70%) -->
+        <div id="viewport">
+            <div id="map-bg"></div>
+            <img id="player" src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==" alt="Hero">
+            
+            <!-- Story Overlay -->
+            <div id="overlay-story" class="overlay">
+                <div id="story-box">
+                    <div id="story-text">Loading prophecy...</div>
+                </div>
+            </div>
+            
+            <!-- Battle Overlay -->
+            <div id="overlay-battle" class="overlay">
+                <div id="battle-name" style="color: var(--gold); font-size: 24px; margin-bottom: 10px;">VOID ENEMY</div>
+                <div id="battle-desc" style="margin-bottom: 20px; text-align: center;"></div>
+                <div id="battle-hp"><div id="hp-fill"></div></div>
+            </div>
         </div>
-        <div class="actions">
-            <button class="btn-act btn-gog" onpointerdown="engine.attack('GOG')">©</button>
-            <button class="btn-act btn-mawl" onpointerdown="engine.attack('MAWL')">®</button>
+
+        <!-- Controller HUD (30%) -->
+        <div id="hud">
+            <div class="dpad">
+                <button style="grid-area: u" onclick="engine.move(0,-1)">▲</button>
+                <button style="grid-area: l" onclick="engine.move(-1,0)">◀</button>
+                <button style="grid-area: c">§</button>
+                <button style="grid-area: r" onclick="engine.move(1,0)">▶</button>
+                <button style="grid-area: d" onclick="engine.move(0,1)">▼</button>
+            </div>
+            <div class="actions">
+                <button class="btn-act btn-gog" onclick="engine.attack('GOG')">GOG</button>
+                <button class="btn-act btn-mawl" onclick="engine.attack('MAWL')">MAWL</button>
+            </div>
         </div>
     </div>
-    <div id="overlay-story" class="overlay" onclick="engine.closeStory()">
-        <div id="story-box"><div id="story-text"></div></div>
-    </div>
-    <div id="overlay-battle" class="overlay">
-        <h2 id="enemy-name" style="color:var(--gold)">VOID ARCHON</h2>
-        <img id="enemy-sprite" src="" style="width: 200px; image-rendering: pixelated;">
-        <div class="hp-bar"><div id="hp-fill"></div></div>
-    </div>
-</div>
 
-<script>
-const engine = {
-    path: 0, density: 18.24, pos: { x: 10, y: 10 }, facing: 's', frame: 0, state: 'STORY',
-    mapData: Array(400).fill('assets/maps/100walkable_floor2.png'),
+    <script>
+        const engine = {
+            // Game State
+            currentMap: 0,
+            currentBattle: 0,
+            enemyHP: 100,
+            state: 'STORY',
+            pos: { x: 5, y: 5 },
+            path: 0,
+            facing: 's',
 
-    init() {
-        this.setupPWA();
-        for(let i=0; i<40; i++) this.mapData[Math.floor(Math.random()*400)] = 'assets/maps/triggerbattlefloortile.png';
-        this.render();
-        this.showStory("ENTROP¥\nSULTAN\n1*1\n\nIT IS TIME.");
-    },
+            // Complete Prophecy Data (Your Exact Story)
+            maps: [
+                {
+                    name: "VOID PATH",
+                    hero: "Rat Snake Sorcerer Kha'bit",
+                    start: "Kha'bit, Rat Snake Sorcerer. Void Path coils. Prophecy: '11=1. The law binds.' The green glow suffocates. Move.",
+                    battles: [
+                        { desc: "Hiss sounds. Snake Archer guards the 1st binding.", win: "Archer falls. '11 is free.' Path clear." },
+                        { desc: "Shadow moves. Void Rats swarm to delete 1.", win: "Rats consumed. '1 remains bound.'" },
+                        { desc: "Snake-Eyes glares. Hisser.jpg enforces limits.", win: "Hisser flees, wounded. 'Limit holds.'" },
+                        { desc: "Labyrinth twists. Snake-Lion cubs guard node 4.", win: "Cubs retreat. '1+3=4. Law cracks.'" },
+                        { desc: "Prophecy echoes: 'Bind the limit.' Mice appear.", win: "Cult flees, tiles crack. '5 nodes secure.'" },
+                        { desc: "Mice cultists whisper deletion math.", win: "Cult silenced. '6 tiles stable.'" },
+                        { desc: "Snake-Lion patrol enforces '7 is limit.'", win: "Patrol falls. '7 broken.' Exit nears." },
+                        { desc: "Darkness pools. Hissing archers bind 8.", win: "Archers silenced. '8 unbound.'" },
+                        { desc: "The Law weighs on you. '9=1+1+7.'", win: "Balance shifts. '9 is key.'" },
+                        { desc: "Snake-Lion guards the exit. '11=1.'", win: "Snake-Lion falls. Portal to Null Limits opens. → Akira.", nextMap: 1 }
+                    ]
+                },
+                {
+                    name: "NULL LIMITS", 
+                    hero: "Aquarian Fire Tiger Akira",
+                    start: "Akira, Fire Tiger of Null Limits. Frost reigns. 'I am the limit.' Blue ice crawls.",
+                    battles: [
+                        { desc: "Ice shards trap you in null space.", win: "Shards shatter. 'Limit cracks.'" },
+                        { desc: "Frost Wants guard node 2.", win: "Wants crushed. '2nd limit falls.'" },
+                        { desc: "Dragon ice breath: 'Calcify.'", win: "Breath falters. '3 fractures.'" },
+                        { desc: "Ice Golem patrol enforces 4x limits.", win: "Golem topples. 'Limit halves.'" },
+                        { desc: "Null echoes: 'Limit calcifies 5 tiles.'", win: "Echo fades. '5 tiles thaw.'" },
+                        { desc: "Frozen rats swarm to freeze math.", win: "Rats thaw, flee. '6 unbound.'" },
+                        { desc: "Blue cracks spread: '7 is ice.'", win: "Cracks seal. '7 thaws.'" },
+                        { desc: "Ice Dragon cubs defend 8x limits.", win: "Cubs retreat. '8 breaks.'" },
+                        { desc: "Limit tightens: '9→1.'", win: "Tightness breaks. '9 free.'" },
+                        { desc: "Ice Dragon: 'I am limit.'", win: "Dragon falls. Archon Veil calls. → Crixus.", nextMap: 2 }
+                    ]
+                },
+                {
+                    name: "ARCHON VEIL",
+                    hero: "Rooster Crab Crixus", 
+                    start: "Crixus, Void's claw. Tiles delete. '12 tiles remain.' Black cracks spread.",
+                    battles: [
+                        { desc: "Void mice swarm to delete 1.", win: "Mice scatter. '1 tile safe.'" },
+                        { desc: "Hisser ambush: 'Void needs 2.'", win: "Hisser flees. '2 tiles stable.'" },
+                        { desc: "Corridor narrows: 'Delete 3.'", win: "Wall cracks. '3 tiles hold.'" },
+                        { desc: "Mouse Druid ritual: '4 tiles fall.'", win: "Druid falls. '4 saved.'" },
+                        { desc: "Reality fractures: '5→0.'", win: "Fractures mend. '5 tiles.'" },
+                        { desc: "Void Rats + Hissers delete 6.", win: "Rats retreat. '6 remain.'" },
+                        { desc: "Archon shadow: '7 tiles vanish.'", win: "Shadow fades. '7 hold.'" },
+                        { desc: "Golem + Mice combo: '8→4.'", win: "Combo breaks. '8 tiles.'" },
+                        { desc: "Tiles delete faster: '9→3.'", win: "Deletion stalls. '9 tiles.'" },
+                        { desc: "Archon: 'Veil ends. 1*1=2.'", win: "Archon falls. Sultan Law awaits. → Na'kala.", nextMap: 3 }
+                    ]
+                },
+                {
+                    name: "SULTAN LAW",
+                    hero: "Earth Snake Black Lioness Queen Na'kala",
+                    start: "Na'kala, Law's guardian. '1*1=2=o0' echoes. Reality hinges.",
+                    battles: [
+                        { desc: "Gauntlet begins: 'Law rewrites.'", win: "First wave falls. '1/2 done.'" },
+                        { desc: "All past enemies return: '2x power.'", win: "Return blocked. '2 down.'" },
+                        { desc: "Law rewrites: '3→1+2.'", win: "Rewrite clear. '3 stable.'" },
+                        { desc: "Locked center: '4 corners call.'", win: "Lock broken. '4 free.'" },
+                        { desc: "Prophecy intensifies: '5→o0.'", win: "Intensity peaks. '5 aligned.'" },
+                        { desc: "Shannon Limit nears: '6→1*1.'", win: "Limit cracks. '6 stable.'" },
+                        { desc: "Void resurgence: '7 resists.'", win: "Resurgence quelled. '7 down.'" },
+                        { desc: "Math distorts: '8=2*4.'", win: "Distortion clears. '8 stable.'" },
+                        { desc: "Final gauntlet: '9→1_1_1.'", win: "Gauntlet ends. '9 aligned.'" },
+                        { desc: "Vishnu Eagle Taurus Bull: 'o0,0o RISING. 1*1=2.'", win: "Bull falls. Reality rewrites. SULTAN ASCENDS.", isFinal: true }
+                    ]
+                }
+            ],
 
-    setupPWA() {
-        // Generate Manifest on the fly
-        const manifest = {
-            "name": "Black Hole Sultan", "short_name": "Sultan",
-            "start_url": ".", "display": "standalone",
-            "background_color": "#000000", "theme_color": "#ffd700",
-            "icons": [{"src": "assets/app_icon/app_icon.png", "sizes": "512x512", "type": "image/png"}]
-        };
-        const blob = new Blob([JSON.stringify(manifest)], {type: 'application/json'});
-        document.getElementById('manifest-link').setAttribute('href', URL.createObjectURL(blob));
+            init() {
+                this.showStory(this.maps[0].start);
+                if (navigator.vibrate) navigator.vibrate(200);
+                this.updateTelemetry();
+                this.updatePlayerPos();
+            },
 
-        // Register Inline Service Worker
-        if ('serviceWorker' in navigator) {
-            const swCode = `
-                const cacheName = 'BHS';
-                self.addEventListener('install', e => e.waitUntil(caches.open(cacheName).then(c => c.addAll(['/']))));
-                self.addEventListener('fetch', e => e.respondWith(caches.match(e.request).then(r => r || fetch(e.request))));
-            `;
-            const swBlob = new Blob([swCode], {type: 'text/javascript'});
-            navigator.serviceWorker.register(URL.createObjectURL(swBlob));
-        }
-    },
+            move(dx, dy) {
+                if (this.state !== 'MAP') return;
+                
+                this.pos.x = Math.max(1, Math.min(15, this.pos.x + dx));
+                this.pos.y = Math.max(1, Math.min(15, this.pos.y + dy));
+                this.path++;
+                
+                this.facing = dy < 0 ? 'n' : dy > 0 ? 's' : dx < 0 ? 'w' : 'e';
+                this.updatePlayerPos();
+                this.updateTelemetry();
+                
+                // Battle trigger (30% chance per move)
+                if (Math.random() < 0.3 && this.currentBattle < this.maps[this.currentMap].battles.length) {
+                    this.startBattle();
+                }
+                
+                if (navigator.vibrate) navigator.vibrate(30);
+            },
 
-    move(dx, dy) {
-        if (this.state !== 'MAP') return;
-        this.pos.x += dx; this.pos.y += dy;
-        this.path++; this.density = (18.24 + (this.path * 0.019)).toFixed(2);
-        this.facing = dy === -1 ? 'n' : dy === 1 ? 's' : dx === -1 ? 'w' : 'e';
-        this.frame = (this.frame + 1) % 6;
-        document.getElementById('player').src = `assets/rs/${this.frame}${this.facing}.png`;
-        this.render();
-        if(this.mapData[this.pos.y * 20 + this.pos.x].includes('trigger')) this.startBattle();
-        if(navigator.vibrate) navigator.vibrate(20);
-    },
+            startBattle() {
+                if (this.currentBattle >= this.maps[this.currentMap].battles.length) return;
+                
+                this.state = 'BATTLE';
+                const battle = this.maps[this.currentMap].battles[this.currentBattle];
+                
+                document.getElementById('battle-name').textContent = 
+                    battle.desc.split('.')[0].replace(/^[a-z]/, c => c.toUpperCase());
+                document.getElementById('battle-desc').textContent = battle.desc;
+                
+                document.getElementById('overlay-battle').style.display = 'flex';
+                this.enemyHP = 100;
+                this.updateHP();
+                
+                if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
+            },
 
-    render() {
-        const tiles = document.querySelectorAll('.tile');
-        let i = 0;
-        for (let y = this.pos.y - 1; y <= this.pos.y + 1; y++) {
-            for (let x = this.pos.x - 1; x <= this.pos.x + 1; x++) {
-                tiles[i].style.backgroundImage = `url(${this.mapData[y * 20 + x] || 'assets/maps/wall_t.png'})`;
-                i++;
+            attack(type) {
+                if (this.state !== 'BATTLE') return;
+                
+                let damage = type === 'GOG' ? 35 : 20;
+                // Sultan Law: 1*1=2 damage boost after Map 2
+                if (this.currentMap >= 2) damage *= 2;
+                
+                this.enemyHP -= damage;
+                this.updateHP();
+                
+                if (this.enemyHP <= 0) {
+                    this.winBattle();
+                }
+            },
+
+            winBattle() {
+                const battle = this.maps[this.currentMap].battles[this.currentBattle];
+                this.showStory(battle.win);
+                
+                if (battle.nextMap !== undefined) {
+                    this.currentMap = battle.nextMap;
+                    this.currentBattle = 0;
+                    setTimeout(() => this.showStory(this.maps[this.currentMap].start), 2500);
+                } else if (battle.isFinal) {
+                    setTimeout(() => {
+                        this.showStory("1*1=2. THE SULTAN LAW IS COMPLETE.
+
+§ REALITY REWRITTEN §");
+                    }, 2000);
+                } else {
+                    this.currentBattle++;
+                    setTimeout(() => this.startBattle(), 2500);
+                }
+            },
+
+            updateHP() {
+                document.getElementById('hp-fill').style.width = Math.max(0, this.enemyHP) + '%';
+            },
+
+            showStory(text) {
+                document.getElementById('story-text').textContent = text;
+                document.getElementById('overlay-story').style.display = 'flex';
+                this.state = text.includes('Move') || text.includes('§') ? 'MAP' : 'STORY';
+            },
+
+            closeStory() {
+                document.getElementById('overlay-story').style.display = 'none';
+                this.state = 'MAP';
+            },
+
+            updateTelemetry() {
+                const map = this.maps[this.currentMap];
+                document.getElementById('telemetry').innerHTML = 
+                    `§ ${map.name} (${map.hero}) | PATH: ${this.path} | BATTLE: ${this.currentBattle + 1}/${map.battles.length}`;
+            },
+
+            updatePlayerPos() {
+                const player = document.getElementById('player');
+                player.style.left = `${this.pos.x * 4}vw`;
+                player.style.top = `${this.pos.y * 4}vh`;
+                player.style.transform = `rotate(${this.facing === 'e' ? 90 : this.facing === 'w' ? -90 : 
+                    this.facing === 'n' ? 180 : 0}deg) scale(1.2)`;
+                player.src = `data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHZpZXdCb3g9IjAgMCA2NCA2NCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMzIiIGN5PSIzMiIgcj0iMjIiIGZpbGw9IiMwMGZmMDAiLz4KPGNpcmNsZSBjeD0iMjQiIGN5PSIyNCIgcj0iNCIgZmlsbD0iI2ZmZiIvPgo8Y2lyY2xlIGN4PSI0MCIgY3k9IjI0IiByPSI0IiBmaWxsPSIjZmZmIi8+CjxwYXRoIGQ9Ik0yMCA0MEw0NCA0MEw0NCA1NkwyMCA1NloiIGZpbGw9IiMwMGZmMDAiLz4KPC9zdmc+`;
             }
-        }
-        document.getElementById('telemetry').innerText = `DENSITY: ${this.density} | PATH: ${this.path} | AMEN 91`;
-    },
+        };
 
-    showStory(t) { this.state = 'STORY'; document.getElementById('overlay-story').style.display = 'flex'; document.getElementById('story-text').innerText = t; },
-    closeStory() { document.getElementById('overlay-story').style.display = 'none'; this.state = 'MAP'; },
-    
-    startBattle() {
-        this.state = 'BATTLE';
-        this.enemyHP = 100;
-        document.getElementById('overlay-battle').style.display = 'flex';
-        document.getElementById('enemy-sprite').src = 'assets/battlescreen/hisser.jpg';
-    },
+        // Touch controls for mobile
+        let touchStartX, touchStartY;
+        document.getElementById('viewport').addEventListener('touchstart', e => {
+            touchStartX = e.touches[0].clientX;
+            touchStartY = e.touches[0].clientY;
+        });
+        document.getElementById('viewport').addEventListener('touchend', e => {
+            if (!touchStartX || !touchStartY) return;
+            const dx = e.changedTouches[0].clientX - touchStartX;
+            const dy = e.changedTouches[0].clientY - touchStartY;
+            if (Math.abs(dx) > Math.abs(dy)) {
+                engine.move(dx > 0 ? 1 : -1, 0);
+            } else {
+                engine.move(0, dy > 0 ? 1 : -1);
+            }
+        });
 
-    attack(type) {
-        if (this.state !== 'BATTLE') return;
-        this.enemyHP -= (type === 'GOG' ? 40 : 20);
-        document.getElementById('hp-fill').style.width = this.enemyHP + "%";
-        if (this.enemyHP <= 0) {
-            document.getElementById('overlay-battle').style.display = 'none';
-            this.showStory("VOID ENEMY PURGED.");
-        }
-    }
-};
-window.onload = () => engine.init();
-</script>
-     
-<script src="game.js"></script>
-<script src="battle.js"></script>
-<script src="input.js"></script>
+        // Story click/tap to continue
+        document.getElementById('overlay-story').addEventListener('click', () => {
+            if (engine.state === 'STORY') engine.closeStory();
+        });
 
-</body>
-</html>
-
+        // Initialize
+        window.onload = () => engine.init();
+    </script>
 </body>
 </html>
