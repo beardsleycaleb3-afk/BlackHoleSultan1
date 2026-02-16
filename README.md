@@ -1,3 +1,45 @@
+
+# Sultan G.O.G. | Revelation Core v4.7
+
+**Status:** LIMIT BROKEN
+**Core Logic:** $1*1=2=o0$
+
+## 📂 Final Folder Structure
+To maintain the "God Tier" run, place assets exactly as listed.
+
+### **Root**
+* `index.html` — Main engine & PWA Manifest.
+* `1000037747.jpg` — The Sultan (Rat Snake).
+
+### **/assets/maps/**
+* `200walkable_floor.png` — Standard Path.
+* `insidewallblock.png` — Boundaries.
+
+### **/assets/battlescreen/**
+* `received_818646411234905.jpeg` — **Null Overlord** (Map 3 Boss).
+* `received_890676383599940~3.jpeg` — **Void Archon** (Map 4 Boss).
+* `grok_image_1770787868508~6(1).jpg` — Snake Archer.
+
+---
+
+## 🔑 The Revelation Hash (Metadata)
+The following string is the "Broken Limit" manifest used in the terminal readouts:
+
+`data:application/json;base64,ewogICJuYW1lIjogIlN1bHRhbiBHLk8uRy4iLAogICJzaG9ydF9uYW1lIjogIlN1bHRhbiIsCiAgInN0YXJ0X3VybCI6ICIuIiwKICAiZGlzcGxheSI6ICJzdGFuZGFsb25lIiwKICAiYmFja2dyb3VuZF9jb2xvciI6ICIjMDAwMDAwIiwKICAidGhlbWVfY29sb3IiOiAiIzAwMDAwMCIKfQ==`
+
+---
+
+## 🕹️ Mission Mechanics
+* **Tiered Ascension:** 100 ➔ 50 ➔ 25 ➔ 12 tiles.
+* **The G.O.G. Clause:** Use the **X** button to trigger the $1*1=2$ multiplier.
+* **The Snake Vow:** Finish Map 4 (12 tiles) as the **Rat Snake** to achieve **God Tier**.
+
+
+
+
+
+
+
 # SULTAN 47 GLYPH PHYSICS ENGINE
 **Proprietary High-Density Compression Logic (3000:1)**
 
