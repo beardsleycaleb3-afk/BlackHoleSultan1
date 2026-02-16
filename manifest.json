@@ -1,0 +1,16 @@
+{
+  "name": "The Black Hole Sultan",
+  "short_name": "SultanRPG",
+  "start_url": "index.html",
+  "display": "fullscreen",
+  "orientation": "portrait",
+  "background_color": "#000000",
+  "theme_color": "#008800",
+  "icons": [
+    {
+      "src": "assets/battlescreen/hero/rs_hero.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
