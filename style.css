@@ -1,0 +1,109 @@
+/* Core Layout */
+body, html {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #000;
+    overflow: hidden;
+    font-family: 'VT323', monospace;
+    user-select: none;
+    touch-action: none; /* Prevents accidental zooming/scrolling */
+}
+
+#console {
+    display: flex;
+    flex-direction: column;
+    width: 100vw;
+    height: 100vh;
+    background: #1a1a1a; /* Dark console casing */
+}
+
+/* 70% Viewport Screen */
+#game-viewport {
+    position: relative;
+    width: 100%;
+    height: 70%;
+    background: #000;
+    overflow: hidden;
+    border-bottom: 4px solid #333;
+}
+
+/* 30% Controller Area */
+#controller {
+    display: flex;
+    width: 100%;
+    height: 30%;
+    background: #222;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+    box-sizing: border-box;
+}
+
+/* Joystick Styling (Left Side) */
+#joystick-base {
+    width: 100px;
+    height: 100px;
+    background: #333;
+    border-radius: 50%;
+    position: relative;
+    border: 2px solid #444;
+}
+
+#joystick-stick {
+    width: 50px;
+    height: 50px;
+    background: #555;
+    border-radius: 50%;
+    position: absolute;
+    top: 25px;
+    left: 25px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+}
+
+/* A/B Buttons (Right Side) */
+#button-zone {
+    display: flex;
+    gap: 20px;
+}
+
+.rpg-btn {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    border: none;
+    font-size: 24px;
+    font-weight: bold;
+    color: white;
+    box-shadow: 0 4px #000;
+}
+
+#btn-a { background: #008800; } /* Accept (Green) */
+#btn-a:active { transform: translateY(4px); box-shadow: 0 0px #000; }
+
+#btn-b { background: #880000; } /* Decline/Menu (Red) */
+#btn-b:active { transform: translateY(4px); box-shadow: 0 0px #000; }
+
+/* Typewriter Text Window */
+#text-window {
+    position: absolute;
+    bottom: 10px;
+    left: 5%;
+    width: 90%;
+    height: 35%;
+    background: rgba(0, 0, 0, 0.85);
+    border: 3px solid #00ff00; /* Void Green */
+    color: #00ff00;
+    padding: 15px;
+    box-sizing: border-box;
+    font-size: 20px;
+    z-index: 100;
+}
+
+/* Map Container for 200x200 navigation */
+#map-container {
+    position: absolute;
+    display: grid;
+    /* Grid size will be set in JS */
+}
