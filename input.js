@@ -1,4 +1,4 @@
-// --- 1. JOYSTICK LOGIC ---
+// --- 1. CONFIGURATION ---
 const stick = document.getElementById('joystick-stick');
 const base = document.getElementById('joystick-base');
 const baseRect = base.getBoundingClientRect();
@@ -6,64 +6,57 @@ const centerX = baseRect.left + baseRect.width / 2;
 const centerY = baseRect.top + baseRect.height / 2;
 const maxRadius = baseRect.width / 2;
 
+// --- 2. TOUCH MOVEMENT ---
 base.addEventListener('touchmove', (e) => {
     e.preventDefault();
     const touch = e.touches[0];
     
-    // Calculate distance from center
     let dx = touch.clientX - centerX;
     let dy = touch.clientY - centerY;
     const distance = Math.sqrt(dx * dx + dy * dy);
 
-    // Clamp stick to the base radius
     if (distance > maxRadius) {
         dx = (dx / distance) * maxRadius;
         dy = (dy / distance) * maxRadius;
     }
 
-    // Visually move the stick
+    // Move the visual stick
     stick.style.transform = `translate(${dx}px, ${dy}px)`;
 
-    // Send movement to player velocity in game.js
-    // Adjust 0.1 to change Minecraft-style "gliding" speed
-    player.velX = (dx / maxRadius) * 4; 
-    player.velY = (dy / maxRadius) * 4;
+    // Update Player Velocity (Minecraft-style gliding)
+    player.velX = (dx / maxRadius) * 5; 
+    player.velY = (dy / maxRadius) * 5;
+
+    // --- SPRITE SWAPPING LOGIC ---
+    // Swaps the overworld image based on joystick angle
+    const heroEl = document.getElementById('hero-overworld');
+    if (Math.abs(dx) > Math.abs(dy)) {
+        player.dir = (dx > 0) ? 'east' : 'west';
+    } else {
+        player.dir = (dy > 0) ? 'south' : 'north';
+    }
+    
+    // Uses your renamed "idlers" assets
+    heroEl.style.backgroundImage = `url('assets/rs/${player.dir}_idlers.png')`;
 });
 
+// --- 3. STOP MOVEMENT ---
 base.addEventListener('touchend', () => {
-    // Snap stick back to center
     stick.style.transform = `translate(0px, 0px)`;
-    // Player glides to a stop via friction in game.js
+    // Velocity will bleed off naturally in game.js via friction
 });
 
-// --- 2. A/B BUTTON LOGIC ---
-const btnA = document.getElementById('btn-a');
-const btnB = document.getElementById('btn-b');
-
-btnA.addEventListener('touchstart', (e) => {
+// --- 4. BUTTONS ---
+document.getElementById('btn-a').addEventListener('touchstart', (e) => {
     e.preventDefault();
-    console.log("Button A: Accept/Attack pressed");
-    
-    if (document.getElementById('text-window').style.display === 'block') {
-        // If story is visible, Button A closes it or starts battle
+    if (isBattleMode) {
+        heroAttack(); // Located in battle.js
+    } else if (document.getElementById('text-window').style.display === 'block') {
         handleStoryAccept();
-    } else if (isBattleMode) {
-        // Trigger combat move
-        heroAttack();
     }
 });
 
-btnB.addEventListener('touchstart', (e) => {
+document.getElementById('btn-b').addEventListener('touchstart', (e) => {
     e.preventDefault();
-    console.log("Button B: Decline/Skill Menu pressed");
-    
-    if (!isBattleMode) {
-        toggleSkillMenu(); // Dead Island style skill map
-    }
+    toggleSkillMenu(); // Opens Dead Island style skill map
 });
-
-function handleStoryAccept() {
-    document.getElementById('text-window').style.display = 'none';
-    // Logic to switch to battlescreen.png and start the turn-based fight
-    initiateBattleMode();
-}
