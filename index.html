@@ -1,19 +1,181 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <style>
-    /* This makes every image exactly the same size (32px) */
-    .tile { width: 32px; height: 32px; display: block; }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Sultan G.O.G. Absolute</title>
     
-    /* This creates your 12x12 grid */
-    #map { 
-      display: grid; 
-      grid-template-columns: repeat(12, 32px); 
-    }
-  </style>
+    <link rel="manifest" href="data:application/json;base64,ewogICJuYW1lIjogIlN1bHRhbiBHLk8uRy4iLAogICJzaG9ydF9uYW1lIjogIlN1bHRhbiIsCiAgInN0YXJ0X3VybCI6ICIuIiwKICAiZGlzcGxheSI6ICJzdGFuZGFsb25lIiwKICAiYmFja2dyb3VuZF9jb2xvciI6ICIjMDAwMDAwIiwKICAidGhlbWVfY29sb3IiOiAiIzAwMDAwMCIKfQ==">
+
+    <style>
+        :root { --red: #ff0000; --gold: #ffd700; --bg: #000; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
+        body, html { background: var(--bg); height: 100vh; overflow: hidden; font-family: 'Courier New', monospace; color: #fff; }
+
+        /* 75% VIEWPORT */
+        #viewport { height: 75vh; position: relative; border-bottom: 2px solid #333; display: flex; justify-content: center; align-items: center; }
+        #camera { display: grid; grid-template-columns: repeat(3, 100px); width: 300px; }
+        .tile { width: 100px; height: 100px; object-fit: cover; }
+        #hero { position: absolute; width: 85px; height: 85px; z-index: 10; object-fit: contain; transition: transform 0.1s; }
+
+        /* BASELINE SETUP SCREEN */
+        #setup { position: absolute; inset: 0; background: #000; z-index: 200; display: flex; flex-direction: column; padding: 20px; }
+        .row { display: flex; justify-content: space-between; align-items: center; margin: 10px 0; background: #111; padding: 12px; border: 1px solid #333; }
+        .val { color: var(--gold); font-weight: bold; }
+
+        /* BATTLESCREEN.PNG STORY OVERLAY */
+        #battlescreen { position: absolute; inset: 0; background: #000; z-index: 100; display: none; flex-direction: column; align-items: center; }
+        #enemy-art { width: 100%; height: 50%; object-fit: contain; border-bottom: 3px solid var(--red); }
+        .story-layer { padding: 20px; text-align: center; }
+
+        /* 25% SKILLSCREEN HUD */
+        #hud { height: 25vh; background: #111; display: flex; border-top: 2px solid #444; }
+        .dpad { width: 40%; display: grid; grid-template-columns: repeat(3, 1fr); padding: 8px; gap: 5px; }
+        .skills { width: 60%; display: grid; grid-template-columns: 1fr 1fr; padding: 8px; gap: 8px; border-left: 2px solid #333; }
+        .s-btn { background: #200; border: 2px solid var(--red); color: #fff; font-weight: bold; position: relative; border-radius: 4px; }
+        .tag { position: absolute; bottom: 2px; right: 5px; font-size: 8px; color: var(--gold); }
+        
+        #hud-meta { position: absolute; top: 10px; left: 10px; font-size: 10px; color: var(--red); z-index: 20; background: rgba(0,0,0,0.8); padding: 5px; }
+    </style>
 </head>
 <body>
-  <div id="map">
+
+<div id="viewport">
+    <div id="hud-meta">MAP: <span id="m-lvl">1</span> | TILE: <span id="t-pos">0</span>/<span id="t-max">100</span></div>
+    
+    <div id="setup">
+        <h2 style="color:var(--red); text-align:center;">SULTAN BASELINE</h2>
+        <p style="text-align:center; font-size:10px; margin: 10px 0;">POINTS: <span id="pts">25</span></p>
+        <div class="row">START LEVEL [1-4] <button onclick="game.mapSel(-1)">-</button> <span id="v-map" class="val">1</span> <button onclick="game.mapSel(1)">+</button></div>
+        <div class="row">SPEED <button onclick="game.stat('spd',-1)">-</button> <span id="v-spd" class="val">0</span> <button onclick="game.stat('spd',1)">+</button></div>
+        <div class="row">DEFENSE <button onclick="game.stat('def',-1)">-</button> <span id="v-def" class="val">0</span> <button onclick="game.stat('def',1)">+</button></div>
+        <div class="row">COSMIC <button onclick="game.stat('cos',-1)">-</button> <span id="v-cos" class="val">0</span> <button onclick="game.stat('cos',1)">+</button></div>
+        <div class="row">ATTACK <button onclick="game.stat('atk',-1)">-</button> <span id="v-atk" class="val">0</span> <button onclick="game.stat('atk',1)">+</button></div>
+        <button onclick="game.start()" style="margin-top:20px; padding:15px; background:var(--red); border:none; color:#fff; font-weight:bold;">INTEGRATE LAW</button>
     </div>
+
+    <div id="camera"></div>
+    <img id="hero" src="1000037747.jpg">
+
+    <div id="battlescreen">
+        <img id="enemy-art" src="">
+        <div class="story-layer">
+            <h3 id="st-name" style="color:var(--gold); letter-spacing:2px;"></h3>
+            <p id="st-msg" style="font-size:14px; margin-top:10px;"></p>
+            <div id="bar-outer" style="width:100%; height:4px; background:#222; margin-top:20px;">
+                <div id="bar-inner" style="height:100%; background:var(--red); width:0%;"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="hud">
+    <div class="dpad">
+        <button class="s-btn" style="grid-column:2" onclick="game.move(0,-1)">UP</button>
+        <button class="s-btn" onclick="game.move(-1,0)">L</button>
+        <button class="s-btn" onclick="game.move(0,1)">D</button>
+        <button class="s-btn" onclick="game.move(1,0)">R</button>
+    </div>
+    <div class="skills">
+        <button class="s-btn" onclick="game.hit('MAWL')">MAWL <span class="tag">A</span></button>
+        <button class="s-btn" onclick="game.hit('DWELL')">DWELL <span class="tag">B</span></button>
+        <button class="s-btn" onclick="game.hit('GOG')">G.O.G. <span class="tag">X</span></button>
+        <button class="s-btn" onclick="game.hit('BATON')">BATON <span class="tag">Y</span></button>
+    </div>
+</div>
+
+<script>
+const game = {
+    y: 0, mapIdx: 1, locked: true, pts: 25, count: 0,
+    lengths: { 1: 100, 2: 50, 3: 25, 4: 12 },
+    stats: { spd: 0, def: 0, cos: 0, atk: 0 },
+    enemies: [
+        { name: "SNAKE ARCHER", img: 'assets/battlescreen/grok_image_1770787868508~6 (1).jpg', pre: "Forced by the script to draw.", post: "Archer mawn. Tile cleared." },
+        { name: "NULL OVERLORD", img: 'assets/battlescreen/received_818646411234905.jpeg', pre: "I am the limit. $1*1=1$!", post: "Limit broken. Math rewritten.", hp: 300, boss: true },
+        { name: "VOID ARCHON", img: 'assets/battlescreen/received_890676383599940~3.jpeg', pre: "12 tiles remain. You die here!", post: "VOID DELETED. o0,0o RISING.", hp: 500, boss: true }
+    ],
+
+    mapSel(d) { this.mapIdx = Math.max(1, Math.min(4, this.mapIdx + d)); this.update(); },
+    stat(s, d) {
+        if(d > 0 && this.pts > 0) { this.stats[s]++; this.pts--; }
+        if(d < 0 && this.stats[s] > 0) { this.stats[s]--; this.pts++; }
+        this.update();
+    },
+    update() {
+        document.getElementById('pts').innerText = this.pts;
+        document.getElementById('v-map').innerText = this.mapIdx;
+        for(let s in this.stats) document.getElementById(`v-${s}`).innerText = this.stats[s];
+        document.getElementById('t-max').innerText = this.lengths[this.mapIdx];
+        document.getElementById('m-lvl').innerText = this.mapIdx;
+    },
+    start() { document.getElementById('setup').style.display = 'none'; this.locked = false; this.render(); },
+    
+    move(dx, dy) {
+        if(this.locked) return;
+        this.y -= dy; 
+        document.getElementById('t-pos').innerText = this.y;
+        const h = document.getElementById('hero');
+        if(dx !== 0) h.style.transform = `scaleX(${dx})`;
+        this.render();
+        if(this.y > 0 && this.y % 10 === 0 && this.y < this.lengths[this.mapIdx]) this.battle(false);
+        if(this.y >= this.lengths[this.mapIdx]) this.battle(true);
+    },
+
+    battle(isBoss) {
+        this.locked = true;
+        this.activeFoe = isBoss ? (this.mapIdx === 4 ? this.enemies[2] : this.enemies[1]) : this.enemies[0];
+        document.getElementById('battlescreen').style.display = 'flex';
+        document.getElementById('enemy-art').src = this.activeFoe.img;
+        document.getElementById('st-name').innerText = this.activeFoe.name;
+        document.getElementById('st-msg').innerText = this.activeFoe.pre;
+        this.targetHP = this.activeFoe.hp || 100;
+    },
+
+    hit(type) {
+        if(!this.locked) return;
+        // G.O.G. Law Multiplier
+        let mult = (type === 'GOG') ? 5 : 1;
+        let pwr = (2 + (this.stats.atk * 2) + (this.stats.cos * 5)) * mult;
+        this.count += pwr;
+        document.getElementById('bar-inner').style.width = Math.min(100, (this.count/this.targetHP * 100)) + "%";
+
+        if(this.count >= this.targetHP) {
+            document.getElementById('st-msg').innerText = this.activeFoe.post;
+            setTimeout(() => {
+                const wasFinal = (this.y >= this.lengths[this.mapIdx] && this.mapIdx === 4);
+                this.locked = false; this.count = 0;
+                document.getElementById('battlescreen').style.display = 'none';
+                document.getElementById('bar-inner').style.width = "0%";
+                if(wasFinal) this.godTierCheck();
+            }, 1500);
+        }
+    },
+
+    godTierCheck() {
+        const isSnake = document.getElementById('hero').src.includes('1000037747.jpg');
+        if(isSnake) {
+            document.body.style.background = "gold";
+            alert("GOD TIER ACHIEVED: 1*1=2=o0,0o. YOU ARE THE SULTAN.");
+        } else {
+            alert("MISSION COMPLETE. BATON PASSED.");
+        }
+        location.reload();
+    },
+
+    render() {
+        const cam = document.getElementById('camera'); cam.innerHTML = '';
+        const floor = (this.mapIdx === 4) ? 'black' : 'url(assets/maps/200walkable_floor.png)';
+        for(let r=this.y-1; r<=this.y+1; r++) {
+            for(let c=0; c<3; c++) {
+                let t = document.createElement('div'); t.className = 'tile';
+                t.style.background = (c === 1) ? floor : '#222';
+                if(c === 1 && r >= this.lengths[this.mapIdx]) t.style.background = "var(--gold)";
+                cam.appendChild(t);
+            }
+        }
+    }
+};
+window.onload = () => game.update();
+</script>
 </body>
 </html>
