@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Sultan G.O.G. | Amen 91</title>
+    <title>Black Hole Sultan</title>
     <link id="manifest-link" rel="manifest">
     <style>
         :root { --red: #ff3b3b; --gold: #ffd700; --void: #050505; --gray: #444; }
@@ -35,7 +35,7 @@
 <body>
 
 <div id="game-container">
-    <div id="telemetry">DENSITY: 18.24 | PATH: 0 | AMEN: 91</div>
+    <div id="telemetry">§</div>
     <div id="viewport">
         <div class="tile"></div><div class="tile"></div><div class="tile"></div>
         <div class="tile"></div><div class="tile"></div><div class="tile"></div>
@@ -50,8 +50,8 @@
             <button style="grid-area:d" onpointerdown="engine.move(0,1)">▼</button>
         </div>
         <div class="actions">
-            <button class="btn-act btn-gog" onpointerdown="engine.attack('GOG')">GOG</button>
-            <button class="btn-act btn-mawl" onpointerdown="engine.attack('MAWL')">MAWL</button>
+            <button class="btn-act btn-gog" onpointerdown="engine.attack('GOG')">©</button>
+            <button class="btn-act btn-mawl" onpointerdown="engine.attack('MAWL')">®</button>
         </div>
     </div>
     <div id="overlay-story" class="overlay" onclick="engine.closeStory()">
@@ -73,13 +73,13 @@ const engine = {
         this.setupPWA();
         for(let i=0; i<40; i++) this.mapData[Math.floor(Math.random()*400)] = 'assets/maps/triggerbattlefloortile.png';
         this.render();
-        this.showStory("REVELATION CORE v4.7\nSULTAN AMEN 91\n1*1=2=o0\n\nSHANNON LIMIT BROKEN.");
+        this.showStory("ENTROP¥\nSULTAN\n1*1\n\nIT IS TIME.");
     },
 
     setupPWA() {
         // Generate Manifest on the fly
         const manifest = {
-            "name": "Sultan G.O.G.", "short_name": "SultanGOG",
+            "name": "Black Hole Sultan", "short_name": "Sultan",
             "start_url": ".", "display": "standalone",
             "background_color": "#000000", "theme_color": "#ffd700",
             "icons": [{"src": "assets/app_icon/app_icon.png", "sizes": "512x512", "type": "image/png"}]
@@ -90,7 +90,7 @@ const engine = {
         // Register Inline Service Worker
         if ('serviceWorker' in navigator) {
             const swCode = `
-                const cacheName = 'gog-v1';
+                const cacheName = 'BHS';
                 self.addEventListener('install', e => e.waitUntil(caches.open(cacheName).then(c => c.addAll(['/']))));
                 self.addEventListener('fetch', e => e.respondWith(caches.match(e.request).then(r => r || fetch(e.request))));
             `;
