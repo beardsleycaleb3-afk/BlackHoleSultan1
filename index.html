@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Sultan G.O.G. | Amen 91</title>
+    <link id="manifest-link" rel="manifest">
+    <style>
+        :root { --red: #ff3b3b; --gold: #ffd700; --void: #050505; --gray: #444; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body, html { 
+            margin: 0; padding: 0; width: 100%; height: 100%; 
+            background: var(--void); color: #fff; font-family: 'Courier New', monospace;
+            overflow: hidden; touch-action: none;
+        }
+        #game-container { display: flex; flex-direction: column; height: 100vh; position: relative; }
+        #telemetry { position: absolute; top: 10px; width: 100%; text-align: center; color: var(--gold); font-size: 14px; z-index: 50; }
+        #viewport { flex: 7; display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(3, 1fr); background: #000; border-bottom: 2px solid var(--gold); }
+        .tile { width: 100%; height: 100%; background-size: cover; image-rendering: pixelated; opacity: 0.15; transition: 0.2s; }
+        .tile:nth-child(5) { opacity: 1; filter: brightness(1.2); }
+        #player { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 80px; z-index: 10; image-rendering: pixelated; }
+        #hud { flex: 3; background: #000; display: grid; grid-template-columns: 1fr 1fr; padding: 15px; padding-bottom: env(safe-area-inset-bottom); }
+        .dpad { display: grid; grid-template-areas: ". u ." "l . r" ". d ."; gap: 5px; width: 140px; }
+        .dpad button { background: #111; border: 1px solid var(--gold); color: var(--gold); border-radius: 8px; font-size: 20px; font-weight: bold; }
+        .actions { display: flex; flex-direction: column; gap: 10px; justify-content: center; align-items: flex-end; }
+        .btn-act { width: 110px; height: 50px; border-radius: 12px; font-weight: bold; border: none; font-size: 18px; color: #fff; }
+        .btn-gog { background: var(--red); box-shadow: 0 5px #900; }
+        .btn-mawl { background: var(--gray); box-shadow: 0 5px #222; }
+        .overlay { position: absolute; inset: 0; z-index: 100; display: none; flex-direction: column; align-items: center; justify-content: center; padding: 20px; background: rgba(0,0,0,0.9); }
+        #story-box { border: 2px solid var(--gold); background: #000; padding: 25px; width: 100%; box-shadow: 0 0 20px var(--gold); }
+        .hp-bar { width: 80%; height: 15px; border: 1px solid #fff; margin-top: 20px; position: relative; }
+        #hp-fill { height: 100%; background: var(--red); width: 100%; transition: width 0.3s; }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <div id="telemetry">DENSITY: 18.24 | PATH: 0 | AMEN: 91</div>
+    <div id="viewport">
+        <div class="tile"></div><div class="tile"></div><div class="tile"></div>
+        <div class="tile"></div><div class="tile"></div><div class="tile"></div>
+        <div class="tile"></div><div class="tile"></div><div class="tile"></div>
+        <img id="player" src="assets/rs/0s.png">
+    </div>
+    <div id="hud">
+        <div class="dpad">
+            <button style="grid-area:u" onpointerdown="engine.move(0,-1)">▲</button>
+            <button style="grid-area:l" onpointerdown="engine.move(-1,0)">◀</button>
+            <button style="grid-area:r" onpointerdown="engine.move(1,0)">▶</button>
+            <button style="grid-area:d" onpointerdown="engine.move(0,1)">▼</button>
+        </div>
+        <div class="actions">
+            <button class="btn-act btn-gog" onpointerdown="engine.attack('GOG')">GOG</button>
+            <button class="btn-act btn-mawl" onpointerdown="engine.attack('MAWL')">MAWL</button>
+        </div>
+    </div>
+    <div id="overlay-story" class="overlay" onclick="engine.closeStory()">
+        <div id="story-box"><div id="story-text"></div></div>
+    </div>
+    <div id="overlay-battle" class="overlay">
+        <h2 id="enemy-name" style="color:var(--gold)">VOID ARCHON</h2>
+        <img id="enemy-sprite" src="" style="width: 200px; image-rendering: pixelated;">
+        <div class="hp-bar"><div id="hp-fill"></div></div>
+    </div>
+</div>
+
+<script>
+const engine = {
+    path: 0, density: 18.24, pos: { x: 10, y: 10 }, facing: 's', frame: 0, state: 'STORY',
+    mapData: Array(400).fill('assets/maps/100walkable_floor2.png'),
+
+    init() {
+        this.setupPWA();
+        for(let i=0; i<40; i++) this.mapData[Math.floor(Math.random()*400)] = 'assets/maps/triggerbattlefloortile.png';
+        this.render();
+        this.showStory("REVELATION CORE v4.7\nSULTAN AMEN 91\n1*1=2=o0\n\nSHANNON LIMIT BROKEN.");
+    },
+
+    setupPWA() {
+        // Generate Manifest on the fly
+        const manifest = {
+            "name": "Sultan G.O.G.", "short_name": "SultanGOG",
+            "start_url": ".", "display": "standalone",
+            "background_color": "#000000", "theme_color": "#ffd700",
+            "icons": [{"src": "assets/app_icon/app_icon.png", "sizes": "512x512", "type": "image/png"}]
+        };
+        const blob = new Blob([JSON.stringify(manifest)], {type: 'application/json'});
+        document.getElementById('manifest-link').setAttribute('href', URL.createObjectURL(blob));
+
+        // Register Inline Service Worker
+        if ('serviceWorker' in navigator) {
+            const swCode = `
+                const cacheName = 'gog-v1';
+                self.addEventListener('install', e => e.waitUntil(caches.open(cacheName).then(c => c.addAll(['/']))));
+                self.addEventListener('fetch', e => e.respondWith(caches.match(e.request).then(r => r || fetch(e.request))));
+            `;
+            const swBlob = new Blob([swCode], {type: 'text/javascript'});
+            navigator.serviceWorker.register(URL.createObjectURL(swBlob));
+        }
+    },
+
+    move(dx, dy) {
+        if (this.state !== 'MAP') return;
+        this.pos.x += dx; this.pos.y += dy;
+        this.path++; this.density = (18.24 + (this.path * 0.019)).toFixed(2);
+        this.facing = dy === -1 ? 'n' : dy === 1 ? 's' : dx === -1 ? 'w' : 'e';
+        this.frame = (this.frame + 1) % 6;
+        document.getElementById('player').src = `assets/rs/${this.frame}${this.facing}.png`;
+        this.render();
+        if(this.mapData[this.pos.y * 20 + this.pos.x].includes('trigger')) this.startBattle();
+        if(navigator.vibrate) navigator.vibrate(20);
+    },
+
+    render() {
+        const tiles = document.querySelectorAll('.tile');
+        let i = 0;
+        for (let y = this.pos.y - 1; y <= this.pos.y + 1; y++) {
+            for (let x = this.pos.x - 1; x <= this.pos.x + 1; x++) {
+                tiles[i].style.backgroundImage = `url(${this.mapData[y * 20 + x] || 'assets/maps/wall_t.png'})`;
+                i++;
+            }
+        }
+        document.getElementById('telemetry').innerText = `DENSITY: ${this.density} | PATH: ${this.path} | AMEN 91`;
+    },
+
+    showStory(t) { this.state = 'STORY'; document.getElementById('overlay-story').style.display = 'flex'; document.getElementById('story-text').innerText = t; },
+    closeStory() { document.getElementById('overlay-story').style.display = 'none'; this.state = 'MAP'; },
+    
+    startBattle() {
+        this.state = 'BATTLE';
+        this.enemyHP = 100;
+        document.getElementById('overlay-battle').style.display = 'flex';
+        document.getElementById('enemy-sprite').src = 'assets/battlescreen/hisser.jpg';
+    },
+
+    attack(type) {
+        if (this.state !== 'BATTLE') return;
+        this.enemyHP -= (type === 'GOG' ? 40 : 20);
+        document.getElementById('hp-fill').style.width = this.enemyHP + "%";
+        if (this.enemyHP <= 0) {
+            document.getElementById('overlay-battle').style.display = 'none';
+            this.showStory("VOID ENEMY PURGED.");
+        }
+    }
+};
+window.onload = () => engine.init();
+</script>
+</body>
+</html>
