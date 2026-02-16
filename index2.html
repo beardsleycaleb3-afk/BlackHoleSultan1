@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Sultan G.O.G. Revelation</title>
+    <link rel="manifest" href="manifest.json">
+    <style>
+        :root { --red: #ff0000; --gold: #ffd700; --glass: rgba(15, 15, 15, 0.75); }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
+        body, html { background: #000; height: 100vh; overflow: hidden; font-family: 'Courier New', monospace; color: #fff; }
+
+        /* WORLD VIEWPORT */
+        #viewport { height: 75vh; position: relative; display: flex; justify-content: center; align-items: center; }
+        #camera { display: grid; grid-template-columns: repeat(3, 100px); width: 300px; }
+        .tile { width: 100px; height: 100px; object-fit: cover; }
+        #hero { position: absolute; width: 85px; height: 85px; z-index: 10; transition: transform 0.1s; }
+
+        /* GLASS CONSOLE UI */
+        #setup, #battlescreen { 
+            position: absolute; inset: 15px; background: var(--glass); 
+            backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 15px;
+            z-index: 100; display: flex; flex-direction: column; align-items: center; padding: 20px;
+        }
+
+        /* 25% HUD SKILLSCREEN */
+        #hud { 
+            height: 25vh; background: rgba(20, 0, 0, 0.6); 
+            backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+            display: flex; border-top: 2px solid rgba(255, 0, 0, 0.3); 
+        }
+        .dpad { width: 40%; display: grid; grid-template-columns: repeat(3, 1fr); padding: 5px; gap: 5px; }
+        .skills { width: 60%; display: grid; grid-template-columns: 1fr 1fr; padding: 5px; gap: 8px; border-left: 1px solid rgba(255, 255, 255, 0.1); }
+        
+        .s-btn { 
+            background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); 
+            color: #fff; font-weight: bold; border-radius: 8px; 
+        }
+        .s-btn:active { background: rgba(255, 0, 0, 0.5); }
+        
+        #meta { position: absolute; top: 10px; left: 10px; font-size: 10px; color: var(--gold); z-index: 20; }
+    </style>
+</head>
+<body>
+    <div id="viewport">
+        <div id="meta">REV_DENSITY: 16.84 bits/syn | TILE: <span id="t-pos">0</span></div>
+        <div id="camera"></div>
+        <img id="hero" src="1000037747.jpg">
+
+        <div id="setup">
+            <h2 style="color:var(--red)">REVELATION CORE</h2>
+            <p>ALLOCATE BASELINE (PTS: <span id="pts">25</span>)</p>
+            <button onclick="game.start()" style="margin-top:auto; padding:15px; width:100%; background:var(--red); border:none; color:#fff; font-weight:bold; border-radius:8px;">INTEGRATE o0</button>
+        </div>
+
+        <div id="battlescreen" style="display:none;">
+            <img id="enemy-art" style="width:100%; height:50%; object-fit:contain;">
+            <h3 id="st-name" style="margin-top:10px;"></h3>
+            <p id="st-msg" style="font-size:12px;"></p>
+            <div style="width:100%; height:4px; background:#333; margin-top:10px;"><div id="bar" style="height:100%; background:var(--red); width:0%;"></div></div>
+        </div>
+    </div>
+
+    <div id="hud">
+        <div class="dpad">
+            <button class="s-btn" style="grid-column:2" onclick="game.move(0,-1)">UP</button>
+            <button class="s-btn" onclick="game.move(-1,0)">L</button>
+            <button class="s-btn" onclick="game.move(0,1)">D</button>
+            <button class="s-btn" onclick="game.move(1,0)">R</button>
+        </div>
+        <div class="skills">
+            <button class="s-btn" onclick="game.hit('MAWL')">MAWL</button>
+            <button class="s-btn" onclick="game.hit('DWELL')">DWELL</button>
+            <button class="s-btn" onclick="game.hit('GOG')">G.O.G.</button>
+            <button class="s-btn" onclick="game.hit('BATON')">BATON</button>
+        </div>
+    </div>
+
+    <script>
+        const game = {
+            y: 0, locked: true, count: 0,
+            start() { document.getElementById('setup').style.display='none'; this.locked=false; this.render(); },
+            move(dx, dy) {
+                if(this.locked) return;
+                this.y -= dy; document.getElementById('t-pos').innerText = this.y;
+                this.render();
+                if(this.y > 0 && this.y % 15 === 0) this.battle();
+            },
+            battle() {
+                this.locked = true;
+                const bs = document.getElementById('battlescreen');
+                bs.style.display = 'flex';
+                document.getElementById('st-name').innerText = "NULL OVERLORD";
+                document.getElementById('st-msg').innerText = "Entropy limit detected. Prove 1*1=2.";
+            },
+            hit(type) {
+                if(!this.locked) return;
+                this.count += (type === 'GOG' ? 25 : 5);
+                document.getElementById('bar').style.width = this.count + "%";
+                if(this.count >= 100) {
+                    this.locked = false; this.count = 0;
+                    document.getElementById('battlescreen').style.display = 'none';
+                }
+            },
+            render() {
+                const cam = document.getElementById('camera'); cam.innerHTML = '';
+                for(let i=0; i<9; i++) {
+                    let t = document.createElement('div'); t.className = 'tile';
+                    t.style.background = (i%3 === 1) ? '#111' : '#000';
+                    cam.appendChild(t);
+                }
+            }
+        };
+        if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js'); }
+    </script>
+</body>
+</html>
