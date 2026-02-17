@@ -1,0 +1,14 @@
+{
+  "maps": [
+    {
+      "id": 1,
+      "name": "VOID PATH",
+      "hero": "Rat Snake Sorcerer Kha'bit",
+      "start": "Kha'bit, Rat Snake Sorcerer. Void Path coils...",
+      "battles": [
+        { "desc": "Hiss sounds. Snake Archer guards the 1st binding.", "win": "Archer falls. '11 is free.' Path clear." },
+        { "desc": "Shadow moves. Void Rats swarm to delete 1.", "win": "Rats consumed. '1 remains bound.'" }
+      ]
+    }
+  ]
+}
