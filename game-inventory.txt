@@ -1,0 +1,16 @@
+# game-inventory.txt - Our Shared Library of Insights
+## Core Fix: Bootstrap Timing
+- Issue: window.onload delayed or skipped on GitHub Pages/mobile.
+- Resolution: Direct engine.init() at script end → Instant telemetry update, story overlay, player sprite.
+- Test: Load in browser; tap to advance prophecy.
+
+## TypeScript Gains
+- Interfaces enforce map structures, prevent undefined skills.sultanLaw from earlier fragments.
+- Future: Add types for player.velX, tile sensors from canvas.js.
+
+## Open Threads for Next Iteration
+- Merge canvas battle triggers with DOM HUD? What hybrid emerges?
+- Asset preloads: Why do sprites sometimes lag on mobile?
+- Prophecy Sync: Align 10-step arrays across versions for unified lore.
+
+What new pattern do you spot when you deploy this, Caleb? Or which layer shall we question next to deepen the RPG's soul?
